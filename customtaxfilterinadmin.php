@@ -4,7 +4,7 @@ Plugin Name: Custom Taxonomy filter in WordPress Admin Post Listing
 Plugin URI: http://codeboxr.com/product/custom-taxonomy-filter-in-wordpress-admin-post-listing
 Description: This plugin adds custom taxonomy filter in wordpress admin post listing panel.
 Author: Codeboxr Team
-Version: 1.1
+Version: 1.2
 Author URI: http://codeboxr.com
 */
 /*
@@ -387,7 +387,7 @@ function todo_restrict_customtaxfilterinadmin_posts() {
     $post_typesc        = get_post_types($argsc);
     $post_types         = array_merge($post_typesb, $post_typesc);
 
-    if ( in_array($typenow, $post_types) &&  $wpcustomtaxfilterinadmin[$typenow] == 'on') {
+    if ( in_array($typenow, $post_types) && isset($wpcustomtaxfilterinadmin[$typenow]) &&  $wpcustomtaxfilterinadmin[$typenow] == 'on') {
         $filter = get_object_taxonomies($typenow);
         //var_dump($filter);
 
@@ -424,7 +424,7 @@ function customtaxfilterinadmin_convert_restrict($query) {
 
 
 
-    if ($pagenow    == 'edit.php' && $typenow != null && $wpcustomtaxfilterinadmin[$typenow]== 'on') {
+    if ($pagenow    == 'edit.php' && $typenow != null && isset($wpcustomtaxfilterinadmin[$typenow]) && $wpcustomtaxfilterinadmin[$typenow]== 'on') {
 
 
         $filters = get_object_taxonomies($typenow);
