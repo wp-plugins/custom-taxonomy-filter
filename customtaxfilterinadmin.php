@@ -1,14 +1,18 @@
 <?php
 /*
-Plugin Name: Custom Taxonomy filter in WordPress Admin Post Listing
-Plugin URI: http://codeboxr.com/product/custom-taxonomy-filter-in-wordpress-admin-post-listing
-Description: This plugin adds custom taxonomy filter in wordpress admin post listing panel.
-Author: Codeboxr Team
-Version: 1.2
-Author URI: http://codeboxr.com
+ * Plugin Name:       CBX Custom Taxonomy Filter
+ * Plugin URI:        http://wpboxr.com/product/custom-taxonomy-filter-in-wp-admin-post-listing
+ * Description:       This plugin adds custom taxonomy filter in wordpress admin post listing panel.
+ * Version:           1.4
+ * Author:            WPBoxr
+ * Author URI:        http://wpboxr.com
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       customtaxfilterinadmin
+ * Domain Path:       /languages
 */
 /*
-    Copyright 2012-2014  Sabuj Kumar Kundu (email : sabuj@codeboxr.com)
+    Copyright 2012-2015  Sabuj Kumar Kundu (email : info@wpboxr.com)
     
 
     This program is free software; you can redistribute it and/or modify
@@ -27,15 +31,15 @@ Author URI: http://codeboxr.com
 */
 ?>
 <?php
-// avoid direct calls to this file where wp core files not present
-if (!function_exists ('add_action')) {
-    header('Status: 403 Forbidden');
-    header('HTTP/1.1 403 Forbidden');
-    exit();
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
 }
+
 /*
  * Use WordPress 2.6 Constants
  */
+/*
 if (!defined('WP_CONTENT_DIR')) {
 	define( 'WP_CONTENT_DIR', ABSPATH.'wp-content');
 }
@@ -48,6 +52,7 @@ if (!defined('WP_PLUGIN_DIR')) {
 if (!defined('WP_PLUGIN_URL')) {
 	define('WP_PLUGIN_URL', WP_CONTENT_URL.'/plugins');
 }
+*/
 
 $wpcustomtaxfilterinadmin = get_option('wpcustomtaxfilterinadmin');
 
@@ -60,33 +65,32 @@ add_action('admin_menu', 'wpcustomtaxfilterinadmin_admin');   //adding menu in a
 /**
  * Plugin activation
  */
-function wpcustomtaxfilterinadmin_activate()
-{
+function wpcustomtaxfilterinadmin_activate(){
     global $wpcustomtaxfilterinadmin;
-    $defaults = array('post' => 'on' );
-    foreach($defaults  as $key => $value)
-    {
+
+	$defaults = array('post' => 1 );
+
+    foreach($defaults  as $key => $value){
         $wpcustomtaxfilterinadmin[$key] = $value;
     }
+
     update_option('wpcustomtaxfilterinadmin',$wpcustomtaxfilterinadmin);
 
 }
 
 //plugin deactivation action
-function wptoolboxfromcodeboxr_deactivation()
-{
+function wptoolboxfromcodeboxr_deactivation(){
     global $wpcustomtaxfilterinadmin;
     //let's keep the otpion table clean
     delete_option('wpcustomtaxfilterinadmin');
 
 }
 
-function wpcustomtaxfilterinadmin_admin()
-{
+function wpcustomtaxfilterinadmin_admin(){
     global $wptoolboxfromcodeboxr_hook, $wpcustomtaxfilterinadmin;
     //add_options_page(page_title, menu_title, access_level/capability, file, [function]);
     if (function_exists('add_options_page')) {
-            $page_hook = add_options_page('Custom Taxonomy filter in Wordpress Admin Post Listing', 'Custom Tax Filter', 'manage_options', 'wpcustomtaxfilterinadmin', 'wpcustomtaxfilterinadmin_admin_option');
+          $page_hook = add_options_page('Custom Taxonomy filter in Wordpress Admin Post Listing', 'CBX Custom Tax Filter', 'manage_options', 'wpcustomtaxfilterinadmin', 'wpcustomtaxfilterinadmin_admin_option');
     }
 
 
@@ -98,254 +102,371 @@ function wpcustomtaxfilterinadmin_admin_option(){
     //global $wp_taxonomies;
     //var_dump($wp_taxonomies);
     ?>
-    <div class="wrap">
-	<div class="icon32" id="icon-options-general"><br/></div>
-	<h2>Custom Taxonomy filter in Wordpress Admin Post Listing</h2>
-	<?php
-        global $wpcustomtaxfilterinadmin;
-        //var_dump($wptoolboxfromcodeboxr);
-        $builtinposts = array();
-        $customposts  = array();
-        $alltypeposts = array();
-
-        $builtintaxs = array();
-        $customtaxs  = array();
-        $alltypetaxs = array();
+	<h3>CBX Custom Tax Filter</h3>
 
 
+	<div class="wrap">
 
-        $builtinargs = array(
-          'public'   => true,
-          'show_ui'  => true,
-          '_builtin' => true
-          //'publicly_queryable' => true
-        );
+		<div id="icon-options-general" class="icon32"></div>
 
-        $customargs = array(
-          'public'   => true,
-          'show_ui'  => true,
-          '_builtin' => false
-          //'publicly_queryable' => true
-        );
 
-        $output = 'objects'; // names or objects, note names is the default
-        $operator = 'and'; // 'and' or 'or'
+		<div id="poststuff">
 
-        //builtin post types
-        $post_typesb = get_post_types($builtinargs, $output, $operator);
-        foreach ($post_typesb  as $post_typeb ) {
-            $label  = $post_typeb->labels->name;
-            $name   = $post_typeb->name;
-            $alltypeposts[$name] = $label;
-            $builtinposts[$name] = $label;
+			<div id="post-body" class="metabox-holder columns-2">
 
-            $taxonomies = get_object_taxonomies($name, 'objects');
-            foreach($taxonomies as $taxonomy){
-                $labeltax   = $taxonomy->labels->name;
-                $nametax    = $taxonomy->name;
-                if($taxonomy->_builtin == '1'){
-                    $builtintaxs[$nametax]  = $labeltax;
-                    $alltypetaxs[$nametax]  = $labeltax;
-                 }
-                else{
-                    $customtaxs[$nametax]   = $labeltax;
-                    $alltypetaxs[$nametax]  = $labeltax;
-                }
-            }
-        }
+				<!-- main content -->
+				<div id="post-body-content">
 
-        //custom post types
-        $post_typesc = get_post_types($customargs, $output, $operator);
-        foreach ($post_typesc  as $post_typec ) {
-            $label = $post_typec->labels->name;
-            $name = $post_typec->name;
-            $alltypeposts[$name] = $label;
-            $customposts[$name]  = $label;
+					<div class="meta-box-sortables ui-sortable">
 
-            $taxonomies = get_object_taxonomies($name, 'objects');
-            foreach($taxonomies as $taxonomy){
-                $labeltax   = $taxonomy->labels->name;
-                $nametax    = $taxonomy->name;
-                if($taxonomy->_builtin == '1'){
-                    $builtintaxs[$nametax]  = $labeltax;
-                    $alltypetaxs[$nametax]  = $labeltax;
-                 }
-                else{
-                    $customtaxs[$nametax]   = $labeltax;
-                    $alltypetaxs[$nametax]  = $labeltax;
-                }
-            }
-        }
+						<div class="postbox">
 
-	if(isset($_POST['uwpcustomtaxfilterinadmin'])) {
-		check_admin_referer('wpcustomtaxfilterinadmin');
-        //var_dump($alltypeposts);
-		//post var
-		foreach($alltypeposts  as $key => $value){
-            if(!isset($_POST['pt'.$key])) continue;
-            $wpcustomtaxfilterinadmin[$key] = $_POST['pt'.$key];
-        }
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<!-- Toggle -->
 
-        foreach($alltypetaxs  as $key => $value){
-            if(!isset($_POST['tx'.$key])) continue;
-            $wpcustomtaxfilterinadmin[$key] = trim($_POST['tx'.$key]);
-        }
-        update_option('wpcustomtaxfilterinadmin',$wpcustomtaxfilterinadmin);
-        //var_dump($wptoolboxfromcodeboxr);
+							<h3 class="handle">Plugin Setting</span>
+							</h3>
 
-	}//end main if
+							<div class="inside">
+							<?php
+							global $wpcustomtaxfilterinadmin;
+							//var_dump($wptoolboxfromcodeboxr);
+							$builtinposts = array();
+							$customposts  = array();
+							$alltypeposts = array();
 
-    $wpcustomtaxfilterinadmin = (array)get_option('wpcustomtaxfilterinadmin');
+							$builtintaxs = array();
+							$customtaxs  = array();
+							$alltypetaxs = array();
 
-    if(isset($_POST['uwpcustomtaxfilterinadmin'])) {
-        echo '<!-- Last Action --><div id="message" class="updated fade"><p>Options updated</p></div>';
-    }
 
-?>
 
-    <div style="width: 50%; float: left; display: inline; margin-right: 10px;">
-        <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-        <?php wp_nonce_field('wpcustomtaxfilterinadmin'); ?>
-        <h3>Plugin Options</h3>
-        <table cellspacing="0" class="widefat post fixed">
-            <thead>
-            <tr>
-                <th style="" class="manage-column" scope="col">Post Types</th>
-                <th style="" class="manage-column" scope="col">Selection</th>
-            </tr>
-            </thead>
-            <tfoot>
-            <tr>
-                <th style="" class="manage-column" scope="col">Post Types</th>
-                <th style="" class="manage-column" scope="col">Selection</th>
-            </tr>
-            </tfoot>
-            <tbody>
-                    <?php
-                    //var_dump($alltypeposts);
-                    echo '<tr><td colspan="2"><h3>Built-in Posts Types</h3></td></tr>';
-                    foreach ($builtinposts  as $key => $value ) {
-                        $currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : '';
-                        echo '<tr>';
-                        echo '<td>'. $value.'['.$key. ']</td>';
-                        echo '<td><label for="pt'.$key.'"><input id="pt'.$key.'" type="checkbox" name="pt'.$key.'" '.checked('on', $currentvalue,false).' /> Enable/Disable</label></td>';
-                        echo '</tr>';
-                        echo '<tr><td colspan="2">';
-                        $taxonomies = get_object_taxonomies($key, 'objects');
-                        ?>
-                        <table cellspacing="0" class="widefat post fixed">
-                            <thead>
-                            <tr>
-                                <th style="" class="manage-column" scope="col">Taxonomy Name</th>
-                                <th style="" class="manage-column" scope="col">Built-in</th>
-                                <th style="" class="manage-column" scope="col">Selection</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th style="" class="manage-column" scope="col">Taxonomy Name</th>
-                                <th style="" class="manage-column" scope="col">Built-in</th>
-                                <th style="" class="manage-column" scope="col">Selection</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
+							$builtinargs = array(
+								'public'   => true,
+								'show_ui'  => true,
+								'_builtin' => true
+								//'publicly_queryable' => true
+							);
 
-                               <?php
-                               foreach($taxonomies as $taxonomy){
-                                   $tkey = $taxonomy->name;
-                                   $currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : '' ;
-                               ?>
+							$customargs = array(
+								'public'   => true,
+								'show_ui'  => true,
+								'_builtin' => false
+								//'publicly_queryable' => true
+							);
 
-                                    <tr>
-                                        <td><?php echo $taxonomy->labels->name; ?></td>
-                                        <td><?php echo is_cbplgtaxbuiltin_customtaxfilterinadmin($taxonomy->_builtin); ?></td>
-                                        <?php echo '<td><label for="tx'.$tkey.'"><input id="tx'.$tkey.'" type="checkbox" name="tx'.$tkey.'" '.checked('on',$currentvalue,false).' /> Enable/Disable</label></td>';  ?>
-                                    </tr>
-                               <?php  }  ?>
+							$output     = 'objects'; // names or objects, note names is the default
+							$operator   = 'and'; // 'and' or 'or'
 
-                            </tbody>
-                            </table>
-                        <?php
-                        echo '</tr>';
-                    }
+							//builtin post types
+							$post_typesb = get_post_types($builtinargs, $output, $operator);
 
-                    echo '<tr><td colspan="2"><h3>Custom Posts Types</h3></td></tr>';
-                    foreach ($customposts  as $key => $value ) {
-                        $currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : '' ;
-                        echo '<tr>';
-                        echo '<td>'. $value.'['.$key. ']</td>';
-                        echo '<td><label for="pt'.$key.'"><input id="pt'.$key.'" type="checkbox" name="pt'.$key.'" '.checked('on',$currentvalue,false).' /> Enable/Disable</label></td>';
-                        echo '</tr>';
-                        echo '<tr><td colspan="2">';
-                        $taxonomies = get_object_taxonomies($key, 'objects');
-                        ?>
-                        <table cellspacing="0" class="widefat post fixed">
-                            <thead>
-                            <tr>
-                                <th style="" class="manage-column" scope="col">Taxonomy Name</th>
-                                <th style="" class="manage-column" scope="col">Built-in</th>
-                                <th style="" class="manage-column" scope="col">Selection</th>
-                            </tr>
-                            </thead>
-                            <tfoot>
-                            <tr>
-                                <th style="" class="manage-column" scope="col">Taxonomy Name</th>
-                                <th style="" class="manage-column" scope="col">Built-in</th>
-                                <th style="" class="manage-column" scope="col">Selection</th>
-                            </tr>
-                            </tfoot>
-                            <tbody>
+							foreach ($post_typesb  as $post_typeb ) {
+								$label  = $post_typeb->labels->name;
+								$name   = $post_typeb->name;
+								$alltypeposts[$name] = $label;
+								$builtinposts[$name] = $label;
 
-                               <?php
-                               foreach($taxonomies as $taxonomy){
-                                   $tkey = $taxonomy->name;
-                                   $currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : '' ;
-                               ?>
+								$taxonomies = get_object_taxonomies($name, 'objects');
 
-                                    <tr>
-                                        <td><?php echo $taxonomy->labels->name; ?></td>
-                                        <td><?php echo is_cbplgtaxbuiltin_customtaxfilterinadmin($taxonomy->_builtin); ?></td>
-                                        <?php echo '<td><label for="tx'.$tkey.'"><input id="tx'.$tkey.'" type="checkbox" name="tx'.$tkey.'" '.checked('on',$currentvalue,false).' /> Enable/Disable</label></td>';  ?>
-                                    </tr>
-                               <?php  }  ?>
+								foreach($taxonomies as $taxonomy){
+									$labeltax   = $taxonomy->labels->name;
+									$nametax    = $taxonomy->name;
 
-                            </tbody>
-                            </table>
-                        <?php
-                        echo '</tr>';
-                    }
-                    ?>
+									if($taxonomy->_builtin == '1'){
+										$builtintaxs[$nametax]  = $labeltax;
+										$alltypetaxs[$nametax]  = $labeltax;
+									}
+									else{
+										$customtaxs[$nametax]   = $labeltax;
+										$alltypetaxs[$nametax]  = $labeltax;
+									}
+								}
+							}
 
-                <tr valign="top">
-                        <td></td>
-                        <td><input type="submit" name="uwpcustomtaxfilterinadmin" class="button-primary" value="Save Changes" ></td>
-                </tr>
-            </tbody>
-        </table>
-        </form>
-    </div>
-</div>
-    <div style="width: 40%; float: left; display: inline;">
-    <h3>Help Center</h3>
-    <table cellspacing="0" class="widefat post fixed">
-            <thead>
-            <tr>
-                <th style="" class="manage-column" scope="col">Supports & Contacts</th>
+							//custom post types
+							$post_typesc = get_post_types($customargs, $output, $operator);
 
-            </tr>
-            </thead>
+							foreach ($post_typesc  as $post_typec ) {
+								$label = $post_typec->labels->name;
+								$name = $post_typec->name;
+								$alltypeposts[$name] = $label;
+								$customposts[$name]  = $label;
 
-            <tbody>
-                <tr>
-                    <td>
-                        <p>Product Name: Custom Taxonomy filter in Wordpress Admin Post Listing</p>
-                        <p>Product Page: <a href="http://codeboxr.com/product/custom-taxonomy-filter-in-wordpress-admin-post-listing">Custom Taxonomy filter in Wordpress Admin Post Listing</a></p>
-                        <p>Supports: <a href="http://codeboxr.com/contact-us.html">Contact</a></p>
-                    </td>
-                </tr>
-            </tbody>
-    </table>
-    </div>
+								$taxonomies = get_object_taxonomies($name, 'objects');
+								foreach($taxonomies as $taxonomy){
+									$labeltax   = $taxonomy->labels->name;
+									$nametax    = $taxonomy->name;
+									if($taxonomy->_builtin == '1'){
+										$builtintaxs[$nametax]  = $labeltax;
+										$alltypetaxs[$nametax]  = $labeltax;
+									}
+									else{
+										$customtaxs[$nametax]   = $labeltax;
+										$alltypetaxs[$nametax]  = $labeltax;
+									}
+								}
+							}
+
+							if(isset($_POST['uwpcustomtaxfilterinadmin'])) {
+								check_admin_referer('wpcustomtaxfilterinadmin');
+
+								foreach($alltypeposts  as $key => $value){
+									//if(isset($_POST['pt'.$key])){
+									$wpcustomtaxfilterinadmin[$key] = isset($_POST['pt'.$key]) ? $_POST['pt'.$key] : 0;
+									//}
+
+
+								}
+
+								foreach($alltypetaxs  as $key => $value){
+									//if(!isset($_POST['tx'.$key])) continue;
+									$wpcustomtaxfilterinadmin[$key] = isset($_POST['tx'.$key]) ? trim($_POST['tx'.$key]) : 0;
+								}
+
+								/*echo '<pre>';
+								print_r($wpcustomtaxfilterinadmin);
+								echo '</pre>';*/
+
+								update_option('wpcustomtaxfilterinadmin',$wpcustomtaxfilterinadmin);
+
+
+							}//end main if
+
+							$wpcustomtaxfilterinadmin = (array)get_option('wpcustomtaxfilterinadmin');
+
+							/*echo '<pre>';
+							print_r($wpcustomtaxfilterinadmin);
+							echo '</pre>';*/
+
+							if(isset($_POST['uwpcustomtaxfilterinadmin'])) {
+								echo '<!-- Last Action --><div id="message" class="updated fade"><p>Options updated</p></div>';
+							}
+
+							?>
+
+
+								<form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+									<?php wp_nonce_field('wpcustomtaxfilterinadmin'); ?>
+
+									<table cellspacing="0" class="widefat post fixed">
+										<thead>
+										<tr>
+											<th style="" class="manage-column" scope="col">Post Types</th>
+											<th style="" class="manage-column" scope="col">Selection</th>
+										</tr>
+										</thead>
+										<tfoot>
+										<tr>
+											<th style="" class="manage-column" scope="col">Post Types</th>
+											<th style="" class="manage-column" scope="col">Selection</th>
+										</tr>
+										</tfoot>
+										<tbody>
+										<?php
+										//var_dump($alltypeposts);
+										echo '<tr><td colspan="2"><h3>Built-in Posts Types</h3></td></tr>';
+										foreach ($builtinposts  as $key => $value ) {
+
+
+
+											$currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : 0;
+
+											//var_dump($key);
+											//var_dump($currentvalue);
+
+
+											echo '<tr>';
+											echo '<td>'. $value.'['.$key. ']</td>';
+											echo '<td><label for="pt'.$key.'"><input id="pt'.$key.'" type="checkbox" value="1" name="pt'.$key.'" '.checked('1', $currentvalue,false).' /> Enable/Disable</label></td>';
+											echo '</tr>';
+											echo '<tr><td colspan="2">';
+											$taxonomies = get_object_taxonomies($key, 'objects');
+											?>
+											<table cellspacing="0" class="widefat post fixed">
+												<thead>
+												<tr>
+													<th style="" class="manage-column" scope="col">Taxonomy Name</th>
+													<th style="" class="manage-column" scope="col">Built-in</th>
+													<th style="" class="manage-column" scope="col">Selection</th>
+												</tr>
+												</thead>
+												<tfoot>
+												<tr>
+													<th style="" class="manage-column" scope="col">Taxonomy Name</th>
+													<th style="" class="manage-column" scope="col">Built-in</th>
+													<th style="" class="manage-column" scope="col">Selection</th>
+												</tr>
+												</tfoot>
+												<tbody>
+
+												<?php
+												foreach($taxonomies as $taxonomy){
+													$tkey = $taxonomy->name;
+
+													//var_dump($wpcustomtaxfilterinadmin[$key]);
+
+													$tcurrentvalue = isset($wpcustomtaxfilterinadmin[$tkey]) ? $wpcustomtaxfilterinadmin[$tkey] : 0 ;
+
+													//var_dump($tkey);
+													//var_dump($currentvalue);
+													?>
+
+													<tr>
+														<td><?php echo $taxonomy->labels->name; ?></td>
+														<td><?php echo is_cbplgtaxbuiltin_customtaxfilterinadmin($taxonomy->_builtin); ?></td>
+														<?php echo '<td><label for="tx'.$tkey.'"><input id="tx'.$tkey.'" type="checkbox" value="1" name="tx'.$tkey.'" '.checked('1', $tcurrentvalue,false).' /> Enable/Disable</label></td>';  ?>
+													</tr>
+												<?php  }  ?>
+
+												</tbody>
+											</table>
+											<?php
+											echo '</tr>';
+										}
+
+										echo '<tr><td colspan="2"><h3>Custom Posts Types</h3></td></tr>';
+
+										foreach ($customposts  as $key => $value ) {
+
+											$currentvalue = isset($wpcustomtaxfilterinadmin[$key]) ? $wpcustomtaxfilterinadmin[$key] : 0 ;
+
+											echo '<tr>';
+											echo '<td>'. $value.'['.$key. ']</td>';
+											echo '<td><label for="pt'.$key.'"><input id="pt'.$key.'" type="checkbox" value="1" name="pt'.$key.'" '.checked('1', $currentvalue, false).' /> Enable/Disable</label></td>';
+											echo '</tr>';
+											echo '<tr><td colspan="2">';
+
+											$taxonomies = get_object_taxonomies($key, 'objects');
+											?>
+											<table cellspacing="0" class="widefat post fixed">
+												<thead>
+												<tr>
+													<th style="" class="manage-column" scope="col">Taxonomy Name</th>
+													<th style="" class="manage-column" scope="col">Built-in</th>
+													<th style="" class="manage-column" scope="col">Selection</th>
+												</tr>
+												</thead>
+												<tfoot>
+												<tr>
+													<th style="" class="manage-column" scope="col">Taxonomy Name</th>
+													<th style="" class="manage-column" scope="col">Built-in</th>
+													<th style="" class="manage-column" scope="col">Selection</th>
+												</tr>
+												</tfoot>
+												<tbody>
+
+												<?php
+												foreach($taxonomies as $taxonomy){
+													$tkey = $taxonomy->name;
+													$tcurrentvalue = isset($wpcustomtaxfilterinadmin[$tkey]) ? $wpcustomtaxfilterinadmin[$tkey] : 0 ;
+													?>
+
+													<tr>
+														<td><?php echo $taxonomy->labels->name; ?></td>
+														<td><?php echo is_cbplgtaxbuiltin_customtaxfilterinadmin($taxonomy->_builtin); ?></td>
+														<?php echo '<td><label for="tx'.$tkey.'"><input id="tx'.$tkey.'" type="checkbox" value="1" name="tx'.$tkey.'" '.checked('1', $tcurrentvalue, false).' /> Enable/Disable</label></td>';  ?>
+													</tr>
+												<?php  }  ?>
+
+												</tbody>
+											</table>
+											<?php
+											echo '</tr>';
+										}
+										?>
+
+										<tr valign="top">
+											<td></td>
+											<td><input type="submit" name="uwpcustomtaxfilterinadmin" class="button-primary" value="Save Changes" ></td>
+										</tr>
+										</tbody>
+									</table>
+								</form>
+							</div>
+							<!-- .inside -->
+
+						</div>
+						<!-- .postbox -->
+
+					</div>
+					<!-- .meta-box-sortables .ui-sortable -->
+
+				</div>
+				<!-- post-body-content -->
+
+				<!-- sidebar -->
+				<div id="postbox-container-1" class="postbox-container">
+
+					<div class="meta-box-sortables">
+
+						<div class="postbox">
+
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<!-- Toggle -->
+							<h3 class="hndle">Plugin Info</h3>
+
+							<div class="inside">
+								<p><a href="http://wpboxr.com/product/custom-taxonomy-filter-in-wp-admin-post-listing" target="_blank">Name : CBX Custom Taxonomy Filter</a></p>
+
+								<p>Author : WPBoxr Team</p>
+								<p>Email : <a href="mailto:info@wpboxr.com" target="_blank">info@wpboxr.com</a></p>
+								<p>Contact : <a href="http://wpboxr.com/contact-us" target="_blank">Contact Us</a></p>
+							</div>
+							<!-- .inside -->
+						</div>
+						<!-- .postbox -->
+						<div class="postbox">
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<!-- Toggle -->
+							<h3 class="inside">WPBoxr on facebook</h3>
+							<div class="inside">
+								<iframe scrolling="no" frameborder="0" allowtransparency="true" style="border:none; overflow:hidden; width:260px; height:258px;" src="//www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fwpboxr&amp;width=260&amp;height=258&amp;show_faces=true&amp;colorscheme=light&amp;stream=false&amp;border_color&amp;header=false&amp;appId=558248797526834"></iframe>
+							</div>
+						</div>
+						<!-- .postbox -->
+						<div class="postbox">
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<!-- Toggle -->
+							<h3 class="inside">WPBoxr on Twitter</h3>
+							<div class="inside">
+								<a class="twitter-timeline" href="https://twitter.com/wpboxr" data-widget-id="612564658164121602">Tweets by @wpboxr</a>
+								<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+							</div>
+						</div>
+						<div class="postbox">
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<!-- Toggle -->
+							<h3 class="hndle"><?php _e('Codeboxr Networks','wpfixedverticalfeedbackbutton') ?></h3>
+							<div class="inside">
+
+								<p><?php _e('Html, Wordpress & Joomla Themes','wpfixedverticalfeedbackbutton') ?></p>
+								<a target="_blank" href="http://themeboxr.com"><img src="http://themeboxr.com/wp-content/themes/themeboxr/images/themeboxr-logo-rect.png" style="max-width: 100%;" alt="themeboxr" title="Themeboxr - useful themes"  /></a>
+								<br/>
+								<p><?php _e('Wordpress Plugins','wpfixedverticalfeedbackbutton') ?></p>
+								<a target="_blank" href="http://wpboxr.com"><img src="http://wpboxr.com/wp-content/themes/themeboxr/images/wpboxr-logo-rect.png" style="max-width: 100%;" alt="wpboxr" title="WPBoxr - Wordpress Extracts"  /></a>
+								<br/><br/>
+								<p>Joomla Extensions</p>
+								<a target="_blank" href="http://joomboxr.com"><img src="http://joomboxr.com/wp-content/themes/themeboxr/images/joomboxr-logo-rect.png" style="max-width: 100%;" alt="joomboxr" title="Joomboxr - Joomla Extracts"  /></a>
+
+							</div>
+						</div>
+
+					</div>
+					<!-- .meta-box-sortables -->
+
+				</div>
+				<!-- #postbox-container-1 .postbox-container -->
+
+			</div>
+			<!-- #post-body .metabox-holder .columns-2 -->
+
+			<br class="clear">
+		</div>
+		<!-- #poststuff -->
+
+	</div> <!-- .wrap -->
+
     <?php
 }
 
@@ -387,12 +508,12 @@ function todo_restrict_customtaxfilterinadmin_posts() {
     $post_typesc        = get_post_types($argsc);
     $post_types         = array_merge($post_typesb, $post_typesc);
 
-    if ( in_array($typenow, $post_types) && isset($wpcustomtaxfilterinadmin[$typenow]) &&  $wpcustomtaxfilterinadmin[$typenow] == 'on') {
+    if ( in_array($typenow, $post_types) && isset($wpcustomtaxfilterinadmin[$typenow]) &&  $wpcustomtaxfilterinadmin[$typenow] == '1') {
         $filter = get_object_taxonomies($typenow);
         //var_dump($filter);
 
         foreach ($filter as $tax_slug) {
-            if($wpcustomtaxfilterinadmin[$tax_slug] == 'on'){
+            if($wpcustomtaxfilterinadmin[$tax_slug] == '1'){
                 $tax_obj = get_taxonomy($tax_slug);
                 wp_dropdown_categories(array(
                     'show_option_all'   => __('Show All '.$tax_obj->label ),
@@ -424,7 +545,7 @@ function customtaxfilterinadmin_convert_restrict($query) {
 
 
 
-    if ($pagenow    == 'edit.php' && $typenow != null && isset($wpcustomtaxfilterinadmin[$typenow]) && $wpcustomtaxfilterinadmin[$typenow]== 'on') {
+    if ($pagenow    == 'edit.php' && $typenow != null && isset($wpcustomtaxfilterinadmin[$typenow]) && $wpcustomtaxfilterinadmin[$typenow]== '1') {
 
 
         $filters = get_object_taxonomies($typenow);
@@ -433,7 +554,7 @@ function customtaxfilterinadmin_convert_restrict($query) {
 
         foreach ($filters as $tax_slug) {
             //var_dump($tax_slug);
-            if($wpcustomtaxfilterinadmin[$tax_slug] == 'on'){
+            if($wpcustomtaxfilterinadmin[$tax_slug] == '1'){
                 //var_dump($tax_slug);
                 $var = &$query->query_vars[$tax_slug];
                 //var_dump($var);
